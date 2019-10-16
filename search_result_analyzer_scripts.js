@@ -3,13 +3,15 @@ function isEmpty(str) {
 }
 
 var falsePositiveResults = [
-"(.*)\.google\.(.*)",
-"www\.youtube\.com",
-"www\.blogger\.com",
+"(.*)\\.google\\.(.*)",
+"www\\.youtube\\.com",
+"www\\.blogger\\.com",
 'javascript(.*)'
 ]
  
-var regExp = new RegExp('\\b(' + falsePositiveResults.join('|') + ')\\b');
+var googleResultsRegExp = new RegExp('\\b(' + falsePositiveResults.join('|') + ')\\b');
+var developersRegExp = new RegExp('developers\\.google\\.com');
+
 var storage = chrome.storage.local;
  
 function getAnchors() {
@@ -17,7 +19,7 @@ function getAnchors() {
                 var result = [];
                 for (var i = 0; i < anchors.length; i++){
                                var anchor = anchors[i];
-                               if (regExp.test(anchor.hostname) || !anchor.href.trim()) {
+                               if (!anchor.href.trim() || (!developersRegExp.test(anchor.hostname) && googleResultsRegExp.test(anchor.hostname))) {
                                                continue;
                                }
                                result.push(anchor);

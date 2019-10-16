@@ -4,7 +4,7 @@ function isEmpty(str) {
 }
 
 function highlight(words) {
-	console.log("highlight:" + words);
+	console.log("FOUND!!! highlight:" + words);
   if (words) {
 					var encodedWords = [words.length];
 					for (var i = 0; i < words.length; ++i) {
@@ -12,11 +12,11 @@ function highlight(words) {
 					}
 					
                   var encStrongRegExp = new RegExp('\\b' + encodedWords.join('\\b|\\b') + '\\b', "ig");
-				  console.log('encStrongRegExp:' + '\\b' + encodedWords.join('\\b|\\b') + '\\b');
+				  //console.log('encStrongRegExp:' + '\\b' + encodedWords.join('\\b|\\b') + '\\b');
                   var strongRegExp = new RegExp('\\b' + words.join('\\b|\\b') + '\\b', "ig");
-				  console.log('strongRegExp:' + '\\b' + words.join('\\b|\\b') + '\\b');
+				  //console.log('strongRegExp:' + '\\b' + words.join('\\b|\\b') + '\\b');
                   var softRegExp = new RegExp(words.join('|'), "ig");
-				  console.log('softRegExp:' + words.join('|'));
+				  //console.log('softRegExp:' + words.join('|'));
 
                   const kSets = [
 
@@ -35,11 +35,20 @@ function highlight(words) {
                                for (let element of elements) {
 								   if (!isEmpty(element.innerText)) {
 										if (encStrongRegExp.test(encodeURIComponent(element.innerText))) {
+											console.log("before:" + element.innerHTML);
 										   element.innerHTML = decodeURIComponent(encodeURIComponent(element.innerHTML).replace(encStrongRegExp, "<my style=\"background-color: rgb(244, 208, 63);\">\$&</my>"));
+											console.log("after:" + element.innerHTML);
+											console.log("contains:" + element.innerHTML.includes(element.innerText));
 										} else if (strongRegExp.test(element.innerText)) {
+											console.log("before:" + element.innerHTML);
 										   element.innerHTML = element.innerHTML.replace(strongRegExp, "<my style=\"background-color: rgb(244, 208, 63);\">\$&</my>");
+											console.log("after:" + element.innerHTML);
+											console.log("contains:" + element.innerHTML.includes(element.innerText));
 										} else if (softRegExp.test(element.innerText)) {
+											console.log("before:" + element.innerHTML);
 										   element.innerHTML = element.innerHTML.replace(softRegExp, "<my style=\"background-color: rgb(255, 250, 205);\">\$&</my>");
+											console.log("after:" + element.innerHTML);
+											console.log("contains:" + element.innerHTML.includes(element.innerText));
 										}
 
 									}
@@ -66,14 +75,14 @@ window.onload = function() {
 						for(p in hrefs) {
 							if (href == p || p == canonicalURL) {
 								highlight(hrefs[p]);
-								break;
+								return;
 							}
 							console.log (p, hrefs[p])
 						}
+						console.log("NOT FOUND!!!");
                 });
 				
 }
  
-// 1. не подсвечивается на developers.google.com
 // 2. сьехала верстка "ainol novo 7 elf 2 характеристики" -> https://market.yandex.ru/product--planshet-ainol-novo-7-elf-ii/8334063/spec - похоже модифицирует href ы
 

@@ -52,7 +52,7 @@
 
     {
 
-      "matches": ["https://*/*", "http://*/*"],
+      "matches": ["https://*/*", "http://*/*", "https://developers.google.com/"],
 
       "exclude_matches": ["https://www.google.com/*", "http://www.google.com/*", "https://www.google.ru/*", "http://www.google.ru/*"],
 
