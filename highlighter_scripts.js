@@ -1,88 +1,182 @@
+var STRONG_COLOR_REPLACEMENT = "<my style=\"background-color: rgb(244, 208, 63);\">\$&</my>";
+var SOFT_COLOR_REPLACEMENT = "<my style=\"background-color: rgb(255, 250, 205);\">\$&</my>";
+
+
+var encStrongRegExp;
+var strongRegExp;
+var softRegExp;
+var encSoftRegExp;
 
 function isEmpty(str) {
     return (!str || 0 === str.length);
 }
 
+function replaceRecursively(element) {
+	//console.log("element.nodeName:" + element.nodeName);
+	if (element.nodeName == "MY") { // проверка что элемент уже не обновлен подсветкой
+		return true;
+	}
+	if (encStrongRegExp.test(encodeURIComponent(element.innerText))) {
+		//console.log("childElementCount:" + element.childElementCount);
+		var childReplaced = false;
+		if (element.childElementCount > 0) {
+			for (var i = 0; i < element.childNodes.length; ++i) {
+				childReplaced = childReplaced || replaceRecursively(element.childNodes[i]);
+			}
+		}
+		if (!childReplaced) {
+			var originalText = encodeURIComponent(element.innerText);
+			var replacedText = originalText.replace(encStrongRegExp, STRONG_COLOR_REPLACEMENT);
+			//console.log("originalText:" + originalText);
+			//console.log("replacedText:" + replacedText);
+			//console.log("before:" + element.innerHTML);
+			element.innerHTML = decodeURIComponent(encodeURIComponent(element.innerHTML).replace(originalText, replacedText));
+			//console.log("after:" + element.innerHTML);
+			return true;
+		}
+	} else if (strongRegExp.test(element.innerText)) {
+		//console.log("childElementCount:" + element.childElementCount);
+		var childReplaced = false;
+		if (element.childElementCount > 0) {
+			for (var i = 0; i < element.childNodes.length; ++i) {
+				childReplaced = childReplaced || replaceRecursively(element.childNodes[i]);
+			}
+		}
+		if (!childReplaced) {
+			var originalText = element.innerText;
+			var replacedText = originalText.replace(strongRegExp, STRONG_COLOR_REPLACEMENT);
+			//console.log("originalText:" + originalText);
+			//console.log("replacedText:" + replacedText);
+			//console.log("before:" + element.innerHTML);
+			element.innerHTML = element.innerHTML.replace(originalText, replacedText);
+			//console.log("after:" + element.innerHTML);
+			return true;
+		}
+	} else if (encSoftRegExp.test(encodeURIComponent(element.innerText))) {
+		//console.log("childElementCount:" + element.childElementCount);
+		var childReplaced = false;
+		if (element.childElementCount > 0) {
+			for (var i = 0; i < element.childNodes.length; ++i) {
+				childReplaced = childReplaced || replaceRecursively(element.childNodes[i]);
+			}
+		}
+		if (!childReplaced) {
+			var originalText = encodeURIComponent(element.innerText);
+			var replacedText = originalText.replace(encSoftRegExp, SOFT_COLOR_REPLACEMENT);
+			console.log("originalText:" + originalText);
+			console.log("replacedText:" + replacedText);
+			console.log("before:" + element.innerHTML);
+			element.innerHTML = decodeURIComponent(encodeURIComponent(element.innerHTML).replace(originalText, replacedText));
+			console.log("after:" + element.innerHTML);
+			return true;
+		}
+	} else if (softRegExp.test(element.innerText)) {
+		//console.log("childElementCount:" + element.childElementCount);
+		var childReplaced = false;
+		if (element.childElementCount > 0) {
+			for (var i = 0; i < element.childNodes.length; ++i) {
+				childReplaced = childReplaced || replaceRecursively(element.childNodes[i]);
+			}
+		}
+		if (!childReplaced) {
+			var originalText = element.innerText;
+			var replacedText = originalText.replace(softRegExp, SOFT_COLOR_REPLACEMENT);
+			//console.log("originalText:" + originalText);
+			//console.log("replacedText:" + replacedText);
+			//console.log("before:" + element.innerHTML);
+			element.innerHTML = element.innerHTML.replace(originalText, replacedText);
+			//console.log("after:" + element.innerHTML);
+			return true;
+		}
+	}
+	return false;
+}
+
 function highlight(words) {
 	console.log("FOUND!!! highlight:" + words);
   if (words) {
-					var encodedWords = [words.length];
-					for (var i = 0; i < words.length; ++i) {
-						encodedWords[i] = encodeURIComponent(words[i]);
-					}
-					
-                  var encStrongRegExp = new RegExp('\\b' + encodedWords.join('\\b|\\b') + '\\b', "ig");
-				  //console.log('encStrongRegExp:' + '\\b' + encodedWords.join('\\b|\\b') + '\\b');
-                  var strongRegExp = new RegExp('\\b' + words.join('\\b|\\b') + '\\b', "ig");
-				  //console.log('strongRegExp:' + '\\b' + words.join('\\b|\\b') + '\\b');
-                  var softRegExp = new RegExp(words.join('|'), "ig");
-				  //console.log('softRegExp:' + words.join('|'));
+			var encodedWords = [words.length];
+			var softEncodedWords = [];
+			var softWords = [];
+			for (var i = 0; i < words.length; ++i) {
+				encodedWords[i] = encodeURIComponent(words[i]);
+				if (words[i] && words[i].length > 2) {
+					softWords.push(words[i]);
+					softEncodedWords.push(encodeURIComponent(words[i]));
+				}
+			}
 
-                  const kSets = [
+			
+		  encStrongRegExp = new RegExp('\\b' + encodedWords.join('\\b|\\b') + '\\b', "ig");
+		  //console.log('encStrongRegExp:' + '\\b' + encodedWords.join('\\b|\\b') + '\\b');
+		  strongRegExp = new RegExp('\\b' + words.join('\\b|\\b') + '\\b', "ig");
+		  //console.log('strongRegExp:' + '\\b' + words.join('\\b|\\b') + '\\b');
+		  softRegExp = new RegExp(softWords.join('|'), "ig");
+		  //console.log('softRegExp:' + words.join('|'));
+		  encSoftRegExp = new RegExp(softEncodedWords.join('|'), "ig");
+		  
 
-                               {selectors: 'p, span, dev', color: '#FFFACD'},
+		  const kSets = [
 
-                               {selectors: 'li, td', color: '#FFFACD'},
+					   {selectors: 'p, span, dev', color: '#FFFACD'},
 
-                               {selectors: 'h1, h2, h3, th, td', color: '#FFFACD'}
+					   {selectors: 'li, td, dl, dt', color: '#FFFACD'},
 
-                  ];
+					   {selectors: 'h1, h2, h3, th, td', color: '#FFFACD'}
 
-				var t0 = performance.now();
-                  for (let set of kSets) {
-                               elements = Array.from(document.querySelectorAll(set.selectors));
+		  ];
 
-                               for (let element of elements) {
-								   if (!isEmpty(element.innerText)) {
-										if (encStrongRegExp.test(encodeURIComponent(element.innerText))) {
-											console.log("before:" + element.innerHTML);
-										   element.innerHTML = decodeURIComponent(encodeURIComponent(element.innerHTML).replace(encStrongRegExp, "<my style=\"background-color: rgb(244, 208, 63);\">\$&</my>"));
-											console.log("after:" + element.innerHTML);
-											console.log("contains:" + element.innerHTML.includes(element.innerText));
-										} else if (strongRegExp.test(element.innerText)) {
-											console.log("before:" + element.innerHTML);
-										   element.innerHTML = element.innerHTML.replace(strongRegExp, "<my style=\"background-color: rgb(244, 208, 63);\">\$&</my>");
-											console.log("after:" + element.innerHTML);
-											console.log("contains:" + element.innerHTML.includes(element.innerText));
-										} else if (softRegExp.test(element.innerText)) {
-											console.log("before:" + element.innerHTML);
-										   element.innerHTML = element.innerHTML.replace(softRegExp, "<my style=\"background-color: rgb(255, 250, 205);\">\$&</my>");
-											console.log("after:" + element.innerHTML);
-											console.log("contains:" + element.innerHTML.includes(element.innerText));
-										}
+		var t0 = performance.now();
+		  for (let set of kSets) {
+					   elements = Array.from(document.querySelectorAll(set.selectors));
 
-									}
-								}
-					}
-				var t1 = performance.now();
-				console.log("Call to highlight took " + (t1 - t0) + " milliseconds.");
-		}
+					   for (let element of elements) {
+						   if (!isEmpty(element.innerText)) {
+							   //console.log(element.innerText);
+								replaceRecursively(element, encStrongRegExp);
+							}
+						}
+			}
+		var t1 = performance.now();
+		console.log("Call to highlight took " + (t1 - t0) + " milliseconds.");
+	}
 }
 
 window.onload = function() {
 	console.log("HIGHLIGHER!!!");
-                var storage = chrome.storage.local;
+	var storage = chrome.storage.local;
 
-                var href = window.location.href;
-				var canonicalURL = document.querySelector("link[rel='canonical']") ? document.querySelector("link[rel='canonical']").href : undefined;
+	var href = window.location.href;
+	var canonicalURL = document.querySelector("link[rel='canonical']") ? document.querySelector("link[rel='canonical']").href : undefined;
 
-                console.log("URL:" + href);
-                console.log("canonical URL:" + canonicalURL);
-				
-				storage.get('hrefs', function(object) {
-                        //console.log(object.hrefs);
-						var hrefs = object.hrefs;
-						for(p in hrefs) {
-							if (href == p || p == canonicalURL) {
-								highlight(hrefs[p]);
-								return;
-							}
-							console.log (p, hrefs[p])
-						}
-						console.log("NOT FOUND!!!");
-                });
+	console.log("URL:" + href);
+	console.log("canonical URL:" + canonicalURL);
+	
+	storage.get('hrefs', function(object) {
+			//console.log(object.hrefs);
+			var hrefs = object.hrefs;
+			for(p in hrefs) {
+				if (href == p || p == canonicalURL) {
+					highlight(hrefs[p]);
+					return;
+				}
+			}
+			console.log("NOT FOUND!!!");
+			for(p in hrefs) {
+				console.log (p, hrefs[p])
+			}
+	});
 				
 }
  
-// 2. сьехала верстка "ainol novo 7 elf 2 характеристики" -> https://market.yandex.ru/product--planshet-ainol-novo-7-elf-ii/8334063/spec - похоже модифицирует href ы
+// 3. несколько страниц поиска
 
+
+// для теста: and ainol novo 7 elf 2 usb характеристики систем -> https://market.yandex.ru/product--planshet-ainol-novo-7-elf-ii/8334063/spec
+
+
+// - не выделено слово Система
+// - характеристики выделено слабо?
+// URIError: URI malformed
+
+// что если сначала затегать innerText а потом теги заменить на окраску???
