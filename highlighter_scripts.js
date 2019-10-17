@@ -14,6 +14,7 @@ var softRegExp;
 
 var enableTool = true;
 var enableSoftHighlight = true;
+var scrollToFirst = true;
 
 var storage = chrome.storage.local;
 
@@ -125,6 +126,16 @@ function loadToolSettings() {
     storage.get('enableSoftHighlight', function (result) {
         enableSoftHighlight = result.enableSoftHighlight;
     });
+    storage.get('scrollToFirst', function (result) {
+      scrollToFirst = result.scrollToFirst;
+    });
+}
+
+function scrollToFirstElement() {
+  var element = document.querySelector("." + STRONG_CSS);
+  if (element !== null) {
+    element.scrollIntoView();
+  }
 }
 
 window.onload = function () {
@@ -142,6 +153,9 @@ window.onload = function () {
         for (var url in urlToKeyWordsMap) {
             if (currentURL == url || url == currentCanonicalURL) {
                 highlight(urlToKeyWordsMap[url]);
+                if (scrollToFirst) {
+                  scrollToFirstElement();
+                }
                 return;
             }
         }
@@ -153,7 +167,7 @@ window.onload = function () {
 }
 
 chrome.extension.onMessage.addListener(function (message, sender, callback) {
-  if (message.actionCall == "enableTool") {
+  if (message.actionCall === "enableTool") {
     enableTool = message.value;
     storage.set({'enableTool': enableTool});
     if (enableTool) {
@@ -164,7 +178,7 @@ chrome.extension.onMessage.addListener(function (message, sender, callback) {
       removeHighlight(SOFT_CSS);
     }
   }
-  if (message.actionCall == "enableSoftHighlight") {
+  if (message.actionCall === "enableSoftHighlight") {
     enableSoftHighlight = message.value;
     storage.set({'enableSoftHighlight': enableSoftHighlight});
     if (enableSoftHighlight) {
@@ -173,11 +187,17 @@ chrome.extension.onMessage.addListener(function (message, sender, callback) {
       removeHighlight(SOFT_CSS);
     }
   }
+  if (message.actionCall === "scrollToFirst") {
+    scrollToFirst = message.value;
+    storage.set({'scrollToFirst': scrollToFirst});
+    if (scrollToFirst) {
+      scrollToFirstElement();
+    }
+  }
 });
 // 1. характеристики выделено слабо?
 // 2. несколько страниц поиска
 // для теста: and ainol novo 7 elf 2 usb характеристики систем -> https://market.yandex.ru/product--planshet-ainol-novo-7-elf-ii/8334063/spec
-// scroll to the relevant context(optional)
 // fast switch between search keywords(optional)​
 // highlighting and features customization
 // https://www.regextester.com/

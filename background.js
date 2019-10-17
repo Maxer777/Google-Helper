@@ -39,6 +39,16 @@ chrome.runtime.onInstalled.addListener(function() {
       contextMenuClick(info, tab);
     }
   });
+  chrome.contextMenus.create({
+    id: "scrollToFirst",
+    type: "checkbox",
+    title: "Scroll To First",
+    checked: true,
+    contexts: ["all"],
+    onclick: function(info, tab) {
+      contextMenuClick(info, tab);
+    }
+  });
 
   // Replace all rules ...
   chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
