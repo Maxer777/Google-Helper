@@ -1,5 +1,5 @@
-const STRONG_REPLACEMENT = "<my style=\"background-color: rgb(244, 208, 63);\">$&</my>";
-const SOFT_REPLACEMENT = "<my style=\"background-color: rgb(255, 250, 205);\">$&</my>";
+const STRONG_REPLACEMENT = "<my style=\"background-color: rgb(244, 208, 63);\">\$&</my>";
+const SOFT_REPLACEMENT = "<my style=\"background-color: rgb(255, 250, 205);\">\$&</my>";
 
 const SELECTORS = "p, span, div, li, th, td, dl, dt, h1, h2, h3";
 
@@ -14,7 +14,6 @@ var enableSoftHighlight = true;
 var storage = chrome.storage.local;
 
 function replaceRecursively(element) {
-    //console.log("element.nodeName:" + element.nodeName);
     if (element.nodeName == "SCRIPT") { // skip script nodes
         return;
     }
@@ -28,24 +27,29 @@ function replaceRecursively(element) {
     } else {
         var regex;
         var replacement;
-        if (encStrongRegExp.test(encodeURIComponent(element.innerText))) {
+        var useEncoding = false;
+        if (encStrongRegExp.test(encodeURIComponent(element.textContent))) {
             regex = encStrongRegExp;
             replacement = STRONG_REPLACEMENT;
+            useEncoding = true;
         } else if (strongRegExp.test(element.textContent)) {
             regex = strongRegExp;
             replacement = STRONG_REPLACEMENT;
-        } else if (encSoftRegExp.test(encodeURIComponent(element.innerText)) && enableSoftHighlight) {
+        } else if (encSoftRegExp.test(encodeURIComponent(element.textContent)) && enableSoftHighlight) {
             regex = encSoftRegExp;
             replacement = SOFT_REPLACEMENT;
+            useEncoding = true;
         } else if (softRegExp.test(element.textContent) && enableSoftHighlight) {
             regex = softRegExp;
             replacement = SOFT_REPLACEMENT;
         }
 
         if (regex && replacement) {
+            //console.log("regex:" + regex.toString());
+            //console.log("replacement:" + replacement);
             console.log("before:" + element.textContent);
             var replacementNode = document.createElement('my');
-            replacementNode.innerHTML = element.textContent.replace(regex, replacement);
+            replacementNode.innerHTML = useEncoding ? decodeURIComponent(encodeURIComponent(element.textContent).replace(regex, replacement)) : element.textContent.replace(regex, replacement);
             element.parentNode.insertBefore(replacementNode, element);
             element.parentNode.removeChild(element);
             console.log("after:" + replacementNode.innerHTML);
@@ -120,16 +124,16 @@ window.onload = function () {
     console.log("canonical URL:" + currentCanonicalURL);
 
     storage.get('hrefs', function (object) {
-        var hrefs = object.hrefs;
-        for (var p in hrefs) {
-            if (currentURL == p || p == currentCanonicalURL) {
-                highlight(hrefs[p]);
+        var urlToKeyWordsMap = object.hrefs;
+        for (var url in urlToKeyWordsMap) {
+            if (currentURL == url || url == currentCanonicalURL) {
+                highlight(urlToKeyWordsMap[url]);
                 return;
             }
         }
         console.log("NOT FOUND!!!");
-        for (var p in hrefs) {
-            console.log(p, hrefs[p])
+        for (var url in urlToKeyWordsMap) {
+            console.log(url, urlToKeyWordsMap[url])
         }
     });
 }
