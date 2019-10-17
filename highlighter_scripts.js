@@ -7,8 +7,6 @@ const SOFT_REPLACEMENT = "<"+SOFT_TAG+" class=\""+SOFT_CSS+"\">\$&</"+SOFT_TAG+"
 
 const SELECTORS = "p, span, div, li, th, td, dl, dt, h1, h2, h3";
 
-const ALPHANUMERIC_REGEX = new RegExp("[a-zA-Z0-9_]+", "ig");
-
 var strongRegExp;
 var softRegExp;
 
@@ -17,6 +15,10 @@ var enableSoftHighlight = true;
 var scrollToFirst = true;
 
 var storage = chrome.storage.local;
+
+function isEmpty(str) {
+    return (!str || 0 === str.length);
+}
 
 function replaceRecursively(element) {
     if (element.nodeName == "SCRIPT") { // skip script nodes
@@ -30,26 +32,24 @@ function replaceRecursively(element) {
             replaceRecursively(element.childNodes[i]);
         }
     } else {
-        var regex;
-        var replacement;
+        //console.log("before:" + element.textContent);
+        var isReplaced = false;
         if (strongRegExp.test(element.textContent)) {
-            regex = strongRegExp;
-            replacement = STRONG_REPLACEMENT;
-        } else if (softRegExp.test(element.textContent) && enableSoftHighlight) {
-            regex = softRegExp;
-            replacement = SOFT_REPLACEMENT;
+            //console.log("strong");
+            element.textContent = element.textContent.replace(strongRegExp, STRONG_REPLACEMENT);
+            isReplaced = true;
         }
-
-        if (regex && replacement) {
-            console.log("regex:" + regex.toString());
-            console.log("replacement:" + replacement);
-            console.log("before:" + element.textContent);
-            console.log("beforeEnc:" + encodeURIComponent(element.textContent));
+        if (softRegExp.test(element.textContent)) {
+            //console.log("soft");
+            element.textContent = element.textContent.replace(softRegExp, SOFT_REPLACEMENT);
+            isReplaced = true;
+        }
+        if (isReplaced) {
             var replacementNode = document.createElement('my');
-            replacementNode.innerHTML = element.textContent.replace(regex, replacement);
+            replacementNode.innerHTML = element.textContent;
             element.parentNode.insertBefore(replacementNode, element);
             element.parentNode.removeChild(element);
-            console.log("after:" + replacementNode.innerHTML);
+            //console.log("after:" + replacementNode.innerHTML);
         }
     }
 }
@@ -62,24 +62,10 @@ function extractWords(keyWords) {
         }
     }
 
-    var strongRegexString = "";
-    for (var i = 0; i < keyWords.length; ++i) {
-        var word = keyWords[i];
-        if (ALPHANUMERIC_REGEX.test(word)) {
-            strongRegexString += "|\\b" + word + "\\b";
-        } else {
-            strongRegexString += "|(^|\\s)" + word + "($|\\s)";
-        }
-    }
-    strongRegexString = strongRegexString.substring(1);
-    strongRegExp = new RegExp(strongRegexString, "ig");
+    strongRegExp = new RegExp("(?<=(\\s|^|\\!|\\\\|\\\"|\\#|\\$|\\%|\\&|\\'|\\(|\\)|\\*|\\+|\\,|\\-|\\.|\\/|\\:|\\;|\\<|\\=|\\>|\\?|\\@|\\[|\\]|\\^|\\_|\\`|\\{|\\||\\}|\\~))(" + keyWords.join('|') + ")(?=(\\s|$|\\!|\\\\|\\\"|\\#|\\$|\\%|\\&|\\'|\\(|\\)|\\*|\\+|\\,|\\-|\\.|\\/|\\:|\\;|\\<|\\=|\\>|\\?|\\@|\\[|\\]|\\^|\\_|\\`|\\{|\\||\\}|\\~))", "ig");
     console.log('strongRegExp:' + strongRegExp.toString());
-    softRegExp = new RegExp(softWords.join('|'), "ig");
+    softRegExp = new RegExp("(?<!\\>)" + softWords.join('(?!\\<)|(?<!\\>)') + "(?!\\<)", "ig");
     console.log('softRegExp:' + softRegExp.toString());
-}
-
-function isEmpty(str) {
-    return (!str || 0 === str.length);
 }
 
 function highlight(keyWords) {
@@ -90,13 +76,14 @@ function highlight(keyWords) {
         extractWords(keyWords);
 
         const elements = Array.from(document.querySelectorAll(SELECTORS));
+        console.log("elements " + elements.length);
         for (let element of elements) {
             if (!isEmpty(element.innerText)) {
                 replaceRecursively(element);
             }
         }
 
-        console.log("Call to highlight took " + (performance.now() - startTime) + " milliseconds.");
+        console.log("Highlighting took " + (performance.now() - startTime) + " milliseconds.");
     }
 }
 
@@ -202,8 +189,9 @@ chrome.extension.onMessage.addListener(function (message, sender, callback) {
   }
 });
 // 1. характеристики выделено слабо?
-// 2. несколько страниц поиска
+// ранняя подсветка/парсинг до onload
 // для теста: and ainol novo 7 elf 2 usb характеристики систем -> https://market.yandex.ru/product--planshet-ainol-novo-7-elf-ii/8334063/spec
 // fast switch between search keywords(optional)​
 // highlighting and features customization
 // https://www.regextester.com/
+// 2. несколько страниц поиска

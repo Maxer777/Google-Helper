@@ -67,6 +67,7 @@ function findSnippetUntilNeighborIsFaced(element, neighbors) {
 
 window.onload = function () {
     console.log("ANALYZER!!!");
+    var startTime = performance.now();
     var anchors = getAnchors();
     var keyWords = [];
     var elements = Array.from(document.querySelectorAll("input"));
@@ -96,4 +97,5 @@ window.onload = function () {
         console.log(url, hrefs[url])
     }
     storage.set({'hrefs': hrefs});
+    console.log("Analyzing took " + (performance.now() - startTime) + " milliseconds.");
 }
