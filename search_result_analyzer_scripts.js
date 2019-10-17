@@ -109,8 +109,10 @@ window.onload = function () {
 
 function analyzeByTimer() {
     let timerId = setTimeout(function tick() {
-        analyze();
-        if (!loaded) {
+        if (loaded) {
+            analyze();
+        } else {
+            analyze();
             timerId = setTimeout(tick, 50);
         }
     }, 50);

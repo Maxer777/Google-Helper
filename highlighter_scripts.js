@@ -197,17 +197,19 @@ window.onload = function () {
 
 function highlightByTimer() {
     let timerId = setTimeout(function tick() {
-        highlight();
-        if (!loaded) {
-            timerId = setTimeout(tick, 500);
+        if (loaded) {
+            highlight();
+        } else {
+            highlight();
+            timerId = setTimeout(tick, 300);
         }
-    }, 500);
+    }, 300);
 }
 
 highlightByTimer();
 
 // для теста: and ainol novo 7 elf 2 usb характеристики систем -> https://market.yandex.ru/product--planshet-ainol-novo-7-elf-ii/8334063/spec
-// fast switch between search keywords(optional)​
-// highlighting and features customization
-// https://www.regextester.com/
-// 2. несколько страниц поиска
+
+// 1. fast switch between search keywords(optional)​
+// 2. highlighting and features customization
+// 3. несколько страниц поиска
