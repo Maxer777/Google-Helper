@@ -129,6 +129,12 @@ function loadToolSettings() {
     storage.get('scrollToFirst', function (result) {
       scrollToFirst = result.scrollToFirst;
     });
+    storage.get('highlight_color', function (result) {
+      var color = result.highlight_color;
+      if (color !== null) {
+        console.log('highlight color', color);
+      }
+    });
 }
 
 function scrollToFirstElement() {
