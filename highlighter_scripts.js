@@ -34,10 +34,10 @@ function replaceRecursively(element) {
         } else if (strongRegExp.test(element.textContent)) {
             regex = strongRegExp;
             replacement = STRONG_REPLACEMENT;
-        } else if (encSoftRegExp.test(encodeURIComponent(element.innerText))) {
+        } else if (encSoftRegExp.test(encodeURIComponent(element.innerText)) && enableSoftHighlight) {
             regex = encSoftRegExp;
             replacement = SOFT_REPLACEMENT;
-        } else if (softRegExp.test(element.textContent)) {
+        } else if (softRegExp.test(element.textContent) && enableSoftHighlight) {
             regex = softRegExp;
             replacement = SOFT_REPLACEMENT;
         }
@@ -96,12 +96,16 @@ function highlight(keyWords) {
     }
 }
 
+function removeHighlight() {
+
+}
+
 function loadToolSettings() {
   storage.get('enableTool', function(result){
-    enableTool = result;
+    enableTool = result.enableTool;
   });
   storage.get('enableSoftHighlight', function(result){
-    enableSoftHighlight = result;
+    enableSoftHighlight = result.enableSoftHighlight;
   });
 }
 
@@ -115,17 +119,17 @@ window.onload = function () {
     console.log("URL:" + currentURL);
     console.log("canonical URL:" + currentCanonicalURL);
 
-    chrome.storage.local.get('hrefs', function (object) {
-        var urlToKeyWordsMap = object.hrefs;
-        for (var url in urlToKeyWordsMap) {
-            if (currentURL == url || currentCanonicalURL == url) {
-                highlight(urlToKeyWordsMap[url]);
+    storage.get('hrefs', function (object) {
+        var hrefs = object.hrefs;
+        for (var p in hrefs) {
+            if (currentURL == p || p == currentCanonicalURL) {
+                highlight(hrefs[p]);
                 return;
             }
         }
         console.log("NOT FOUND!!!");
-        for (var url in urlToKeyWordsMap) {
-            console.log(url, urlToKeyWordsMap[url])
+        for (var p in hrefs) {
+            console.log(p, hrefs[p])
         }
     });
 }
@@ -138,6 +142,7 @@ chrome.extension.onMessage.addListener(function (message, sender, callback) {
   if (message.actionCall == "enableSoftHighlight") {
     enableSoftHighlight = message.value;
     storage.set({'enableSoftHighlight': enableSoftHighlight});
+    removeHighlight();
   }
 });
 // 1. характеристики выделено слабо?

@@ -19,28 +19,26 @@ chrome.runtime.onInstalled.addListener(function() {
   }
 
   chrome.contextMenus.removeAll();
-  chrome.contextMenus.create(
-    {
-      id: "enableTool",
-      title: "Enable",
-      type: "checkbox",
-      checked: true,
-      contexts: ["all"],
-      onclick: function(info, tab) {
-        contextMenuClick(info, tab);
-      }
-    });
   chrome.contextMenus.create({
-      id: "enableSoftHighlight",
-      type: "checkbox",
-      title: "Enable Soft Highlight",
-      checked: true,
-      contexts: ["all"],
-      onclick: function(info, tab) {
-        contextMenuClick(info, tab);
-      }
+    id: "enableTool",
+    title: "Enable",
+    type: "checkbox",
+    checked: true,
+    contexts: ["all"],
+    onclick: function(info, tab) {
+      contextMenuClick(info, tab);
     }
-  );
+  });
+  chrome.contextMenus.create({
+    id: "enableSoftHighlight",
+    type: "checkbox",
+    title: "Enable Soft Highlight",
+    checked: true,
+    contexts: ["all"],
+    onclick: function(info, tab) {
+      contextMenuClick(info, tab);
+    }
+  });
 
   // Replace all rules ...
   chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
