@@ -1,5 +1,9 @@
-const STRONG_REPLACEMENT = "<my class=\"ghs_strong\">\$&</my>";
-const SOFT_REPLACEMENT = "<my class=\"ghs_soft\">\$&</my>";
+const STRONG_CSS = "ghs_strong";
+const SOFT_CSS = "ghs_soft";
+const STRONG_TAG = "my_strong";
+const SOFT_TAG = "my_soft";
+const STRONG_REPLACEMENT = "<"+STRONG_TAG+" class=\""+STRONG_CSS+"\">\$&</"+STRONG_TAG+">";
+const SOFT_REPLACEMENT = "<"+SOFT_TAG+" class=\""+SOFT_CSS+"\">\$&</"+SOFT_TAG+">";
 
 const SELECTORS = "p, span, div, li, th, td, dl, dt, h1, h2, h3";
 
@@ -95,11 +99,22 @@ function highlight(keyWords) {
     }
 }
 
-function removeHighlight(cssclass) {
-  var elements = document.querySelectorAll("." + cssclass);
-
+function removeHighlight(cssClass) {
+  var elements = document.querySelectorAll("." + cssClass);
   for (var element of elements) {
-    element.classList.remove(cssclass);
+    element.classList.remove(cssClass);
+  }
+}
+
+function addHighlight(cssClass) {
+  var elements;
+  if (cssClass === STRONG_CSS) {
+    elements = document.querySelectorAll(STRONG_TAG);
+  } else {
+    elements = document.querySelectorAll(SOFT_TAG);
+  }
+  for (var element of elements) {
+    element.classList.add(cssClass);
   }
 }
 
@@ -141,13 +156,22 @@ chrome.extension.onMessage.addListener(function (message, sender, callback) {
   if (message.actionCall == "enableTool") {
     enableTool = message.value;
     storage.set({'enableTool': enableTool});
-    removeHighlight("ghs_strong");
-    removeHighlight("ghs_soft");
+    if (enableTool) {
+      addHighlight(STRONG_CSS);
+      addHighlight(SOFT_CSS);
+    } else {
+      removeHighlight(STRONG_CSS);
+      removeHighlight(SOFT_CSS);
+    }
   }
   if (message.actionCall == "enableSoftHighlight") {
     enableSoftHighlight = message.value;
     storage.set({'enableSoftHighlight': enableSoftHighlight});
-    removeHighlight("ghs_soft");
+    if (enableSoftHighlight) {
+      addHighlight(SOFT_CSS);
+    } else {
+      removeHighlight(SOFT_CSS);
+    }
   }
 });
 // 1. характеристики выделено слабо?
