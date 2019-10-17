@@ -13,16 +13,15 @@ var enableSoftHighlight = true;
 
 var storage = chrome.storage.local;
 
-function isEmpty(str) {
-    return (!str || 0 === str.length);
-}
-
 function replaceRecursively(element) {
     //console.log("element.nodeName:" + element.nodeName);
+    if (element.nodeName == "SCRIPT") { // skip script nodes
+        return;
+    }
+    if (element.nodeName == "MY") { // проверка что элемент уже не обновлен подсветкой
+        return;
+    }
     if (element.nodeType != element.TEXT_NODE) {
-        if (element.nodeName == "MY") { // проверка что элемент уже не обновлен подсветкой
-            return true;
-        }
         for (var i = 0; i < element.childNodes.length; ++i) {
             replaceRecursively(element.childNodes[i]);
         }
@@ -80,7 +79,7 @@ function isEmpty(str) {
 }
 
 function highlight(keyWords) {
-    console.log("FOUND!!! highlight:" + keyWords);
+    console.log("FOUND!!! key words: " + keyWords);
     if (keyWords) {
         var startTime = performance.now();
 
@@ -117,16 +116,16 @@ window.onload = function () {
     console.log("canonical URL:" + currentCanonicalURL);
 
     chrome.storage.local.get('hrefs', function (object) {
-        var hrefs = object.hrefs;
-        for (p in hrefs) {
-            if (currentURL == p || p == currentCanonicalURL) {
-                highlight(hrefs[p]);
+        var urlToKeyWordsMap = object.hrefs;
+        for (var url in urlToKeyWordsMap) {
+            if (currentURL == url || currentCanonicalURL == url) {
+                highlight(urlToKeyWordsMap[url]);
                 return;
             }
         }
         console.log("NOT FOUND!!!");
-        for (p in hrefs) {
-            console.log(p, hrefs[p])
+        for (var url in urlToKeyWordsMap) {
+            console.log(url, urlToKeyWordsMap[url])
         }
     });
 }
