@@ -212,4 +212,4 @@ highlightByTimer();
 
 // 1. fast switch between search keywords(optional)​
 // 2. highlighting and features customization
-// 3. несколько страниц поиска
+// 3. javascript map size -> https://javascript.info/map-set

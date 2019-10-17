@@ -67,6 +67,8 @@ function findSnippetUntilNeighborIsFaced(element, neighbors) {
     return findSnippetUntilNeighborIsFaced(element.parentElement, neighbors);
 }
 
+var hrefs;
+
 function analyze() {
     console.log("Start analyzing");
     var startTime = performance.now();
@@ -78,7 +80,7 @@ function analyze() {
             keyWords = element.value.split(" ");
         }
     }
-    var hrefs = {};
+    hrefs = {};
     console.log("keyWords:" + keyWords);
     if (anchors) {
         for (var i = 0; i < anchors.length; ++i) {
@@ -98,13 +100,36 @@ function analyze() {
     for (var url in hrefs) {
         console.log(url, hrefs[url])
     }
-    storage.set({'hrefs': hrefs});
+
+    storage.get('hrefs', function (object) {
+        var urlToKeyWordsMap = object.hrefs;
+        console.log("urlToKeyWordsMap=" + urlToKeyWordsMap);
+        if (urlToKeyWordsMap) {
+            for (var url in hrefs) {
+                urlToKeyWordsMap[url] = hrefs[url];
+            }
+            storage.set({'hrefs': urlToKeyWordsMap});
+        } else {
+            storage.set({'hrefs': hrefs});
+        }
+    });
+
     console.log("Analyzing took " + (performance.now() - startTime) + " milliseconds.");
+}
+
+function clear() {
+    if (hrefs) {
+        storage.set({'hrefsToRemove': hrefs});
+        // TODO
+    }
 }
 
 var loaded = false;
 window.onload = function () {
     loaded = true;
+}
+window.onunload = function () {
+    clear();
 }
 
 function analyzeByTimer() {
