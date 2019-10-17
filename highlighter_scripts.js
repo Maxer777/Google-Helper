@@ -91,7 +91,7 @@ function highlight(words) {
 
         var t0 = performance.now();
         for (let set of kSets) {
-            elements = Array.from(document.querySelectorAll(set.selectors));
+            var elements = Array.from(document.querySelectorAll(set.selectors));
 
             for (let element of elements) {
                 if (!isEmpty(element.innerText)) {
@@ -117,7 +117,6 @@ function loadToolSettings() {
 window.onload = function () {
     console.log("HIGHLIGHER!!!");
     loadToolSettings();
-    var storage = chrome.storage.local;
 
     var href = window.location.href;
     var canonicalURL = document.querySelector("link[rel='canonical']") ? document.querySelector("link[rel='canonical']").href : undefined;
