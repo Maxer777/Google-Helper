@@ -1,3 +1,5 @@
+console.log("HIGHLIGHER!!!");
+
 const STRONG_CSS = "ghs_strong";
 const SOFT_CSS = "ghs_soft";
 const STRONG_TAG = "my_strong";
@@ -68,7 +70,7 @@ function extractWords(keyWords) {
     console.log('softRegExp:' + softRegExp.toString());
 }
 
-function highlight(keyWords) {
+function highlightKeyWords(keyWords) {
     console.log("FOUND!!! key words: " + keyWords);
     if (keyWords) {
         var startTime = performance.now();
@@ -131,8 +133,7 @@ function scrollToFirstElement() {
   }
 }
 
-window.onload = function () {
-    console.log("HIGHLIGHER!!!");
+function highlight() {
     loadToolSettings();
 
     var currentURL = window.location.href;
@@ -145,7 +146,7 @@ window.onload = function () {
         var urlToKeyWordsMap = object.hrefs;
         for (var url in urlToKeyWordsMap) {
             if (currentURL == url || url == currentCanonicalURL) {
-                highlight(urlToKeyWordsMap[url]);
+                highlightKeyWords(urlToKeyWordsMap[url]);
                 if (scrollToFirst) {
                   scrollToFirstElement();
                 }
@@ -188,8 +189,23 @@ chrome.extension.onMessage.addListener(function (message, sender, callback) {
     }
   }
 });
-// 1. характеристики выделено слабо?
-// ранняя подсветка/парсинг до onload
+
+var loaded = false;
+window.onload = function () {
+    loaded = true;
+}
+
+function highlightByTimer() {
+    let timerId = setTimeout(function tick() {
+        highlight();
+        if (!loaded) {
+            timerId = setTimeout(tick, 500);
+        }
+    }, 500);
+}
+
+highlightByTimer();
+
 // для теста: and ainol novo 7 elf 2 usb характеристики систем -> https://market.yandex.ru/product--planshet-ainol-novo-7-elf-ii/8334063/spec
 // fast switch between search keywords(optional)​
 // highlighting and features customization

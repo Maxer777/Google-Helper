@@ -1,18 +1,20 @@
-function isEmpty(str) {
-    return (!str || 0 === str.length);
-}
+console.log("ANALYZER!!!");
 
-var falsePositiveResults = [
+const falsePositiveResults = [
     "(.*)\\.google\\.(.*)",
     "www\\.youtube\\.com",
     "www\\.blogger\\.com",
     'javascript(.*)'
 ]
 
-var googleResultsRegExp = new RegExp('\\b(' + falsePositiveResults.join('|') + ')\\b');
-var developersRegExp = new RegExp('developers\\.google\\.com');
+const googleResultsRegExp = new RegExp('\\b(' + falsePositiveResults.join('|') + ')\\b');
+const developersRegExp = new RegExp('developers\\.google\\.com');
 
-var storage = chrome.storage.local;
+const storage = chrome.storage.local;
+
+function isEmpty(str) {
+    return (!str || 0 === str.length);
+}
 
 function getAnchors() {
     var anchors = document.getElementsByTagName('a');
@@ -65,8 +67,8 @@ function findSnippetUntilNeighborIsFaced(element, neighbors) {
     return findSnippetUntilNeighborIsFaced(element.parentElement, neighbors);
 }
 
-window.onload = function () {
-    console.log("ANALYZER!!!");
+function analyze() {
+    console.log("Start analyzing");
     var startTime = performance.now();
     var anchors = getAnchors();
     var keyWords = [];
@@ -99,3 +101,19 @@ window.onload = function () {
     storage.set({'hrefs': hrefs});
     console.log("Analyzing took " + (performance.now() - startTime) + " milliseconds.");
 }
+
+var loaded = false;
+window.onload = function () {
+    loaded = true;
+}
+
+function analyzeByTimer() {
+    let timerId = setTimeout(function tick() {
+        analyze();
+        if (!loaded) {
+            timerId = setTimeout(tick, 50);
+        }
+    }, 50);
+}
+
+analyzeByTimer();
