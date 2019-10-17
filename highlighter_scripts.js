@@ -3,10 +3,10 @@ const SOFT_REPLACEMENT = "<my style=\"background-color: rgb(255, 250, 205);\">\$
 
 const SELECTORS = "p, span, div, li, th, td, dl, dt, h1, h2, h3";
 
-var encStrongRegExp;
+const ALPHANUMERIC_REGEX = new RegExp("[a-zA-Z0-9_]+", "ig");
+
 var strongRegExp;
 var softRegExp;
-var encSoftRegExp;
 
 var enableTool = true;
 var enableSoftHighlight = true;
@@ -27,29 +27,21 @@ function replaceRecursively(element) {
     } else {
         var regex;
         var replacement;
-        var useEncoding = false;
-        if (encStrongRegExp.test(encodeURIComponent(element.textContent))) {
-            regex = encStrongRegExp;
-            replacement = STRONG_REPLACEMENT;
-            useEncoding = true;
-        } else if (strongRegExp.test(element.textContent)) {
+        if (strongRegExp.test(element.textContent)) {
             regex = strongRegExp;
             replacement = STRONG_REPLACEMENT;
-        } else if (encSoftRegExp.test(encodeURIComponent(element.textContent)) && enableSoftHighlight) {
-            regex = encSoftRegExp;
-            replacement = SOFT_REPLACEMENT;
-            useEncoding = true;
         } else if (softRegExp.test(element.textContent) && enableSoftHighlight) {
             regex = softRegExp;
             replacement = SOFT_REPLACEMENT;
         }
 
         if (regex && replacement) {
-            //console.log("regex:" + regex.toString());
-            //console.log("replacement:" + replacement);
+            console.log("regex:" + regex.toString());
+            console.log("replacement:" + replacement);
             console.log("before:" + element.textContent);
+            console.log("beforeEnc:" + encodeURIComponent(element.textContent));
             var replacementNode = document.createElement('my');
-            replacementNode.innerHTML = useEncoding ? decodeURIComponent(encodeURIComponent(element.textContent).replace(regex, replacement)) : element.textContent.replace(regex, replacement);
+            replacementNode.innerHTML = element.textContent.replace(regex, replacement);
             element.parentNode.insertBefore(replacementNode, element);
             element.parentNode.removeChild(element);
             console.log("after:" + replacementNode.innerHTML);
@@ -58,24 +50,27 @@ function replaceRecursively(element) {
 }
 
 function extractWords(keyWords) {
-    var encodedWords = [keyWords.length];
-    var softEncodedWords = [];
     var softWords = [];
     for (var i = 0; i < keyWords.length; ++i) {
-        encodedWords[i] = encodeURIComponent(keyWords[i]);
         if (keyWords[i] && keyWords[i].length > 2) {
             softWords.push(keyWords[i]);
-            softEncodedWords.push(encodeURIComponent(keyWords[i]));
         }
     }
 
-    encStrongRegExp = new RegExp('\\b' + encodedWords.join('\\b|\\b') + '\\b', "ig");
-    //console.log('encStrongRegExp:' + '\\b' + encodedWords.join('\\b|\\b') + '\\b');
-    strongRegExp = new RegExp('\\b' + keyWords.join('\\b|\\b') + '\\b', "ig");
-    //console.log('strongRegExp:' + '\\b' + words.join('\\b|\\b') + '\\b');
+    var strongRegexString = "";
+    for (var i = 0; i < keyWords.length; ++i) {
+        var word = keyWords[i];
+        if (ALPHANUMERIC_REGEX.test(word)) {
+            strongRegexString += "|\\b" + word + "\\b";
+        } else {
+            strongRegexString += "|(^|\\s)" + word + "($|\\s)";
+        }
+    }
+    strongRegexString = strongRegexString.substring(1);
+    strongRegExp = new RegExp(strongRegexString, "ig");
+    console.log('strongRegExp:' + strongRegExp.toString());
     softRegExp = new RegExp(softWords.join('|'), "ig");
-    //console.log('softRegExp:' + words.join('|'));
-    encSoftRegExp = new RegExp(softEncodedWords.join('|'), "ig");
+    console.log('softRegExp:' + softRegExp.toString());
 }
 
 function isEmpty(str) {
@@ -92,7 +87,7 @@ function highlight(keyWords) {
         const elements = Array.from(document.querySelectorAll(SELECTORS));
         for (let element of elements) {
             if (!isEmpty(element.innerText)) {
-                replaceRecursively(element, encStrongRegExp);
+                replaceRecursively(element);
             }
         }
 
@@ -105,12 +100,12 @@ function removeHighlight() {
 }
 
 function loadToolSettings() {
-  storage.get('enableTool', function(result){
-    enableTool = result.enableTool;
-  });
-  storage.get('enableSoftHighlight', function(result){
-    enableSoftHighlight = result.enableSoftHighlight;
-  });
+    storage.get('enableTool', function (result) {
+        enableTool = result.enableTool;
+    });
+    storage.get('enableSoftHighlight', function (result) {
+        enableSoftHighlight = result.enableSoftHighlight;
+    });
 }
 
 window.onload = function () {
@@ -139,16 +134,20 @@ window.onload = function () {
 }
 
 chrome.extension.onMessage.addListener(function (message, sender, callback) {
-  if (message.actionCall == "enableTool") {
-    enableTool = message.value;
-    storage.set({'enableTool': enableTool});
-  }
-  if (message.actionCall == "enableSoftHighlight") {
-    enableSoftHighlight = message.value;
-    storage.set({'enableSoftHighlight': enableSoftHighlight});
-    removeHighlight();
-  }
+    if (message.actionCall == "enableTool") {
+        enableTool = message.value;
+        storage.set({'enableTool': enableTool});
+    }
+    if (message.actionCall == "enableSoftHighlight") {
+        enableSoftHighlight = message.value;
+        storage.set({'enableSoftHighlight': enableSoftHighlight});
+        removeHighlight();
+    }
 });
 // 1. характеристики выделено слабо?
 // 2. несколько страниц поиска
 // для теста: and ainol novo 7 elf 2 usb характеристики систем -> https://market.yandex.ru/product--planshet-ainol-novo-7-elf-ii/8334063/spec
+// scroll to the relevant context(optional)
+// fast switch between search keywords(optional)​
+// highlighting and features customization
+// https://www.regextester.com/
