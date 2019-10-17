@@ -7,6 +7,11 @@ var strongRegExp;
 var softRegExp;
 var encSoftRegExp;
 
+var enableTool = true;
+var enableSoftHighlight = true;
+
+var storage = chrome.storage.local;
+
 function isEmpty(str) {
     return (!str || 0 === str.length);
 }
@@ -94,6 +99,7 @@ function replaceRecursively(element) {
 
 function highlight(words) {
 	console.log("FOUND!!! highlight:" + words);
+  console.log("TOOL STATE: ",enableTool, enableSoftHighlight);
   if (words) {
 			var encodedWords = [words.length];
 			var softEncodedWords = [];
@@ -118,7 +124,7 @@ function highlight(words) {
 
 		  const kSets = [
 
-					   {selectors: 'p, span, dev', color: '#FFFACD'},
+					   {selectors: 'p, span, div', color: '#FFFACD'},
 
 					   {selectors: 'li, td, dl, dt', color: '#FFFACD'},
 
@@ -128,7 +134,7 @@ function highlight(words) {
 
 		var t0 = performance.now();
 		  for (let set of kSets) {
-					   elements = Array.from(document.querySelectorAll(set.selectors));
+					   var elements = Array.from(document.querySelectorAll(set.selectors));
 
 					   for (let element of elements) {
 						   if (!isEmpty(element.innerText)) {
@@ -142,10 +148,19 @@ function highlight(words) {
 	}
 }
 
+function loadToolSettings() {
+  storage.get('enableTool', function(result){
+    enableTool = result;
+  });
+  storage.get('enableSoftHighlight', function(result){
+    enableSoftHighlight = result;
+  });
+}
+
 window.onload = function() {
 	console.log("HIGHLIGHER!!!");
-	var storage = chrome.storage.local;
 
+  loadToolSettings();
 	var href = window.location.href;
 	var canonicalURL = document.querySelector("link[rel='canonical']") ? document.querySelector("link[rel='canonical']").href : undefined;
 
@@ -166,9 +181,19 @@ window.onload = function() {
 				console.log (p, hrefs[p])
 			}
 	});
-				
 }
- 
+
+chrome.extension.onMessage.addListener(function (message, sender, callback) {
+  if (message.actionCall == "enableTool") {
+    enableTool = message.value;
+    storage.set({'enableTool': enableTool});
+  }
+  if (message.actionCall == "enableSoftHighlight") {
+    enableSoftHighlight = message.value;
+    storage.set({'enableSoftHighlight': enableSoftHighlight});
+  }
+});
+
 // 3. несколько страниц поиска
 
 
