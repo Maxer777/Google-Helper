@@ -1,5 +1,7 @@
-var STRONG_REPLACEMENT = "<my style=\"background-color: rgb(244, 208, 63);\">$&</my>";
-var SOFT_REPLACEMENT = "<my style=\"background-color: rgb(255, 250, 205);\">$&</my>";
+const STRONG_REPLACEMENT = "<my style=\"background-color: rgb(244, 208, 63);\">$&</my>";
+const SOFT_REPLACEMENT = "<my style=\"background-color: rgb(255, 250, 205);\">$&</my>";
+
+const SELECTORS = "p, span, div, li, th, td, dl, dt, h1, h2, h3";
 
 var encStrongRegExp;
 var strongRegExp;
@@ -41,7 +43,7 @@ function replaceRecursively(element) {
             replacement = SOFT_REPLACEMENT;
         }
 
-        if (regex) {
+        if (regex && replacement) {
             console.log("before:" + element.textContent);
             var replacementNode = document.createElement('my');
             replacementNode.innerHTML = element.textContent.replace(regex, replacement);
@@ -52,56 +54,46 @@ function replaceRecursively(element) {
     }
 }
 
-function extractWords(words) {
-    var encodedWords = [words.length];
+function extractWords(keyWords) {
+    var encodedWords = [keyWords.length];
     var softEncodedWords = [];
     var softWords = [];
-    for (var i = 0; i < words.length; ++i) {
-        encodedWords[i] = encodeURIComponent(words[i]);
-        if (words[i] && words[i].length > 2) {
-            softWords.push(words[i]);
-            softEncodedWords.push(encodeURIComponent(words[i]));
+    for (var i = 0; i < keyWords.length; ++i) {
+        encodedWords[i] = encodeURIComponent(keyWords[i]);
+        if (keyWords[i] && keyWords[i].length > 2) {
+            softWords.push(keyWords[i]);
+            softEncodedWords.push(encodeURIComponent(keyWords[i]));
         }
     }
 
     encStrongRegExp = new RegExp('\\b' + encodedWords.join('\\b|\\b') + '\\b', "ig");
     //console.log('encStrongRegExp:' + '\\b' + encodedWords.join('\\b|\\b') + '\\b');
-    strongRegExp = new RegExp('\\b' + words.join('\\b|\\b') + '\\b', "ig");
+    strongRegExp = new RegExp('\\b' + keyWords.join('\\b|\\b') + '\\b', "ig");
     //console.log('strongRegExp:' + '\\b' + words.join('\\b|\\b') + '\\b');
     softRegExp = new RegExp(softWords.join('|'), "ig");
     //console.log('softRegExp:' + words.join('|'));
     encSoftRegExp = new RegExp(softEncodedWords.join('|'), "ig");
 }
 
-function highlight(words) {
-    console.log("FOUND!!! highlight:" + words);
-    if (words) {
-        extractWords(words);
+function isEmpty(str) {
+    return (!str || 0 === str.length);
+}
 
+function highlight(keyWords) {
+    console.log("FOUND!!! highlight:" + keyWords);
+    if (keyWords) {
+        var startTime = performance.now();
 
-        const kSets = [
+        extractWords(keyWords);
 
-            {selectors: 'p, span, dev', color: '#FFFACD'},
-
-            {selectors: 'li, td, dl, dt', color: '#FFFACD'},
-
-            {selectors: 'h1, h2, h3, th, td', color: '#FFFACD'}
-
-        ];
-
-        var t0 = performance.now();
-        for (let set of kSets) {
-            var elements = Array.from(document.querySelectorAll(set.selectors));
-
-            for (let element of elements) {
-                if (!isEmpty(element.innerText)) {
-                    //console.log(element.innerText);
-                    replaceRecursively(element, encStrongRegExp);
-                }
+        const elements = Array.from(document.querySelectorAll(SELECTORS));
+        for (let element of elements) {
+            if (!isEmpty(element.innerText)) {
+                replaceRecursively(element, encStrongRegExp);
             }
         }
-        var t1 = performance.now();
-        console.log("Call to highlight took " + (t1 - t0) + " milliseconds.");
+
+        console.log("Call to highlight took " + (performance.now() - startTime) + " milliseconds.");
     }
 }
 
@@ -118,17 +110,16 @@ window.onload = function () {
     console.log("HIGHLIGHER!!!");
     loadToolSettings();
 
-    var href = window.location.href;
-    var canonicalURL = document.querySelector("link[rel='canonical']") ? document.querySelector("link[rel='canonical']").href : undefined;
+    var currentURL = window.location.href;
+    var currentCanonicalURL = document.querySelector("link[rel='canonical']") ? document.querySelector("link[rel='canonical']").href : undefined;
 
-    console.log("URL:" + href);
-    console.log("canonical URL:" + canonicalURL);
+    console.log("URL:" + currentURL);
+    console.log("canonical URL:" + currentCanonicalURL);
 
-    storage.get('hrefs', function (object) {
-        //console.log(object.hrefs);
+    chrome.storage.local.get('hrefs', function (object) {
         var hrefs = object.hrefs;
         for (p in hrefs) {
-            if (href == p || p == canonicalURL) {
+            if (currentURL == p || p == currentCanonicalURL) {
                 highlight(hrefs[p]);
                 return;
             }
@@ -138,7 +129,6 @@ window.onload = function () {
             console.log(p, hrefs[p])
         }
     });
-
 }
 
 chrome.extension.onMessage.addListener(function (message, sender, callback) {
