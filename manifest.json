@@ -52,13 +52,10 @@
     },
 
     {
-
       "matches": ["https://*/*", "http://*/*", "https://developers.google.com/"],
-
       "exclude_matches": ["https://www.google.com/*", "http://www.google.com/*", "https://www.google.ru/*", "http://www.google.ru/*"],
-
-      "js": ["highlighter_scripts.js"]
-
+      "js": ["highlighter_scripts.js"],
+      "css": ["css/script.css"]
     }
 
   ]

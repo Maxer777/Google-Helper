@@ -1,5 +1,5 @@
-const STRONG_REPLACEMENT = "<my style=\"background-color: rgb(244, 208, 63);\">\$&</my>";
-const SOFT_REPLACEMENT = "<my style=\"background-color: rgb(255, 250, 205);\">\$&</my>";
+const STRONG_REPLACEMENT = "<my class=\"ghs_strong\">\$&</my>";
+const SOFT_REPLACEMENT = "<my class=\"ghs_soft\">\$&</my>";
 
 const SELECTORS = "p, span, div, li, th, td, dl, dt, h1, h2, h3";
 
@@ -100,8 +100,12 @@ function highlight(keyWords) {
     }
 }
 
-function removeHighlight() {
+function removeHighlight(cssclass) {
+  var elements = document.querySelectorAll("." + cssclass);
 
+  for (var element of elements) {
+    element.classList.remove(cssclass);
+  }
 }
 
 function loadToolSettings() {
@@ -142,11 +146,13 @@ chrome.extension.onMessage.addListener(function (message, sender, callback) {
   if (message.actionCall == "enableTool") {
     enableTool = message.value;
     storage.set({'enableTool': enableTool});
+    removeHighlight("ghs_strong");
+    removeHighlight("ghs_soft");
   }
   if (message.actionCall == "enableSoftHighlight") {
     enableSoftHighlight = message.value;
     storage.set({'enableSoftHighlight': enableSoftHighlight});
-    removeHighlight();
+    removeHighlight("ghs_soft");
   }
 });
 // 1. характеристики выделено слабо?
