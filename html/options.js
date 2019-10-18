@@ -1,30 +1,30 @@
 var storage = chrome.storage.local;
 
 function save_settings() {
-    var strong = document.getElementById('highlight_color').value;
-    var soft = document.getElementById('highlight_soft_color').value;
+  var strong = document.getElementById('highlight_color').value;
+  var soft = document.getElementById('highlight_soft_color').value;
+  var enableTool = document.getElementById('enableTool').checked;
+  var enableSoftHighlight = document.getElementById('enableSoftHighlight').checked;
+  var scrollToFirst = document.getElementById('scrollToFirst').checked;
   storage.set({'strongColor': strong});
   storage.set({'softColor': soft});
-    var status = document.getElementById('status');
-    status.textContent = 'Saved';
-    setTimeout(function () {
-        status.textContent = '';
-    }, 1000);
-    console.log(strong);
-    console.log(soft);
+  storage.set({'enableTool': enableTool});
+  storage.set({'enableSoftHighlight': enableSoftHighlight});
+  storage.set({'scrollToFirst': scrollToFirst});
+  var status = document.getElementById('status');
+  status.textContent = 'Saved';
+  setTimeout(function () {
+    status.textContent = '';
+  }, 1000);
+
+  chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
+    var activeTab = tabs[0];
+    chrome.tabs.sendMessage(activeTab.id, {"settings": "updated"});
+  });
 }
 
 function load_settings() {
-    console.log("load_settings")
-    /*  chrome.storage.local.get({
-        strongColor: '#F4D03F',
-        softColor: '#FFFACD'
-      }, function(settings) {
-        document.getElementById('highlight_color').value = settings.strongColor;
-        document.getElementById('highlight_soft_color').checked = settings.softColor;
-      });*/
     storage.get('strongColor', function (result) {
-      console.log(result.strongColor);
         var color = result.strongColor;
         if (color == null) {
             color = '#F4D03F';
@@ -37,6 +37,18 @@ function load_settings() {
             color = '#FFFACD';
         }
         document.getElementById('highlight_soft_color').value = color;
+    });
+    storage.get('enableTool', function (result) {
+      var enableTool = result.enableTool;
+      document.getElementById('enableTool').checked = enableTool;
+    });
+    storage.get('enableSoftHighlight', function (result) {
+      var enableSoftHighlight = result.enableSoftHighlight;
+      document.getElementById('enableSoftHighlight').checked = enableSoftHighlight;
+    });
+    storage.get('scrollToFirst', function (result) {
+      var scrollToFirst = result.scrollToFirst;
+      document.getElementById('scrollToFirst').checked = scrollToFirst;
     });
 }
 

@@ -1,5 +1,4 @@
 {
-
   "name": "Google Search Result Highlighter",
 
   "version": "1.0",
@@ -7,27 +6,20 @@
   "description": "Tool highlights searched text on pages followed by google search results",
 
   "background": {
-
     "scripts": ["background.js"]
-
   },
+
   "icons" : {
-
     "12" : "highlight.png"
-
    },
 
   "manifest_version": 2,
 
   "permissions" : [
-
     "declarativeContent",
-
     "storage",
-	
 	"activeTab",
-
-    "contextMenus"
+    "tabs"
    ],
 
   "content_scripts": [
@@ -45,8 +37,8 @@
 
   "browser_action": {
     "default_icon" : "highlight.png",
-    "default_title": "Google Search Result Highlighter",      // optional; shown in tooltip
-    "default_popup": "html/options.html"        // optional
+    "default_title": "Google Search Result Highlighter",
+    "default_popup": "html/options.html"
   }
 }
 

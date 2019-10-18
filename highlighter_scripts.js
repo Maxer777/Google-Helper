@@ -178,35 +178,27 @@ function highlight() {
     });
 }
 
-chrome.extension.onMessage.addListener(function (message, sender, callback) {
-  if (message.actionCall === "enableTool") {
-    enableTool = message.value;
-    storage.set({'enableTool': enableTool});
-    if (enableTool) {
-      addHighlight(STRONG_TAG, strong_color);
-      addHighlight(SOFT_TAG, soft_color);
-    } else {
-      removeHighlight(STRONG_TAG);
-      removeHighlight(SOFT_TAG);
+chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      if( request.message === "settings" ) {
+        loadToolSettings();
+        if (enableTool) {
+          addHighlight(STRONG_TAG, strong_color);
+        } else {
+          removeHighlight(STRONG_TAG);
+          removeHighlight(SOFT_TAG);
+        }
+        if (enableSoftHighlight && enableTool) {
+          addHighlight(SOFT_TAG, soft_color);
+        } else {
+          removeHighlight(SOFT_TAG);
+        }
+        if (scrollToFirst) {
+          scrollToFirstElement();
+        }
+      }
     }
-  }
-  if (message.actionCall === "enableSoftHighlight") {
-    enableSoftHighlight = message.value;
-    storage.set({'enableSoftHighlight': enableSoftHighlight});
-    if (enableSoftHighlight) {
-      addHighlight(SOFT_TAG, soft_color);
-    } else {
-      removeHighlight(SOFT_TAG);
-    }
-  }
-  if (message.actionCall === "scrollToFirst") {
-    scrollToFirst = message.value;
-    storage.set({'scrollToFirst': scrollToFirst});
-    if (scrollToFirst) {
-      scrollToFirstElement();
-    }
-  }
-});
+);
 
 var loaded = false;
 window.onload = function () {
