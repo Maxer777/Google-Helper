@@ -41,7 +41,7 @@ function replaceRecursively(element) {
             element.textContent = element.textContent.replace(strongRegExp, STRONG_REPLACEMENT);
             isReplaced = true;
         }
-        if (softRegExp.test(element.textContent)) {
+        if (enableSoftHighlight && softRegExp.test(element.textContent)) {
             //console.log("soft");
             element.textContent = element.textContent.replace(softRegExp, SOFT_REPLACEMENT);
             isReplaced = true;
@@ -113,13 +113,16 @@ function updateHighlight(tag, style) {
 
 function loadToolSettings() {
     storage.get('enableTool', function (result) {
-        enableTool = result.enableTool;
+      enableTool = result.enableTool;
+      chrome.contextMenus.update("enableTool", {type: "checkbox", checked: enableTool});
     });
     storage.get('enableSoftHighlight', function (result) {
-        enableSoftHighlight = result.enableSoftHighlight;
+      enableSoftHighlight = result.enableSoftHighlight;
+      chrome.contextMenus.update("enableSoftHighlight", {type: "checkbox", checked: enableSoftHighlight});
     });
     storage.get('scrollToFirst', function (result) {
       scrollToFirst = result.scrollToFirst;
+      chrome.contextMenus.update("scrollToFirst", {type: "checkbox", checked: scrollToFirst});
     });
     storage.get('highlight_color', function (result) {
       var color = result.highlight_color;
@@ -138,6 +141,10 @@ function scrollToFirstElement() {
 
 function highlight() {
     loadToolSettings();
+
+    if (!enableTool) {
+      return;
+    }
 
     var currentURL = window.location.href;
     var currentCanonicalURL = document.querySelector("link[rel='canonical']") ? document.querySelector("link[rel='canonical']").href : undefined;
