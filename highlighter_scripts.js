@@ -16,6 +16,9 @@ var enableTool = true;
 var enableSoftHighlight = true;
 var scrollToFirst = true;
 
+var strong_color;
+var soft_color;
+
 var storage = chrome.storage.local;
 
 function isEmpty(str) {
@@ -124,11 +127,19 @@ function loadToolSettings() {
       scrollToFirst = result.scrollToFirst;
       chrome.contextMenus.update("scrollToFirst", {type: "checkbox", checked: scrollToFirst});
     });
-    storage.get('highlight_color', function (result) {
-      var color = result.highlight_color;
-      if (color !== null) {
-        console.log('highlight color', color);
-      }
+    storage.get('strongColor', function (result) {
+        var color = result.strongColor;
+        if (color !== null) {
+            strong_color = color;
+            console.log('highlight color', color);
+        }
+    });
+    storage.get('softColor', function (result) {
+        var color = result.softColor;
+        if (color !== null) {
+            soft_color = color;
+            console.log('highlight soft color', color);
+        }
     });
 }
 
@@ -223,3 +234,5 @@ highlightByTimer();
 // 1. fast switch between search keywords(optional)​
 // 2. highlighting and features customization
 // 3. javascript map size -> https://javascript.info/map-set
+// иконка
+// вынести все настройки в попап

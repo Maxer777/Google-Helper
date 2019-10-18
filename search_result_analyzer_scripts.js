@@ -118,10 +118,10 @@ function analyze() {
 }
 
 function clear() {
-    if (hrefs) {
+/*    if (hrefs) {
         storage.set({'hrefsToRemove': hrefs});
         // TODO
-    }
+    }*/
 }
 
 var loaded = false;
