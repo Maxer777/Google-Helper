@@ -1,11 +1,11 @@
 console.log("HIGHLIGHER!!!");
 
-const STRONG_CSS = "ghs_strong";
-const SOFT_CSS = "ghs_soft";
 const STRONG_TAG = "my_strong";
 const SOFT_TAG = "my_soft";
-const STRONG_REPLACEMENT = "<"+STRONG_TAG+" class=\""+STRONG_CSS+"\">\$&</"+STRONG_TAG+">";
-const SOFT_REPLACEMENT = "<"+SOFT_TAG+" class=\""+SOFT_CSS+"\">\$&</"+SOFT_TAG+">";
+const STRONG_COLOR_STYLE = "rgb(244, 208, 63)";
+const SOFT_COLOR_STYLE = "rgb(255, 250, 205)";
+const STRONG_REPLACEMENT = "<"+STRONG_TAG+">\$&</"+STRONG_TAG+">";
+const SOFT_REPLACEMENT = "<"+SOFT_TAG+">\$&</"+SOFT_TAG+">";
 
 const SELECTORS = "p, span, div, li, th, td, dl, dt, h1, h2, h3";
 
@@ -65,9 +65,9 @@ function extractWords(keyWords) {
     }
 
     strongRegExp = new RegExp("(?<=(\\s|^|\\!|\\\\|\\\"|\\#|\\$|\\%|\\&|\\'|\\(|\\)|\\*|\\+|\\,|\\-|\\.|\\/|\\:|\\;|\\<|\\=|\\>|\\?|\\@|\\[|\\]|\\^|\\_|\\`|\\{|\\||\\}|\\~))(" + keyWords.join('|') + ")(?=(\\s|$|\\!|\\\\|\\\"|\\#|\\$|\\%|\\&|\\'|\\(|\\)|\\*|\\+|\\,|\\-|\\.|\\/|\\:|\\;|\\<|\\=|\\>|\\?|\\@|\\[|\\]|\\^|\\_|\\`|\\{|\\||\\}|\\~))", "ig");
-    console.log('strongRegExp:' + strongRegExp.toString());
+    //console.log('strongRegExp:' + strongRegExp.toString());
     softRegExp = new RegExp("(?<!\\>)" + softWords.join('(?!\\<)|(?<!\\>)') + "(?!\\<)", "ig");
-    console.log('softRegExp:' + softRegExp.toString());
+    //console.log('softRegExp:' + softRegExp.toString());
 }
 
 function highlightKeyWords(keyWords) {
@@ -85,27 +85,30 @@ function highlightKeyWords(keyWords) {
             }
         }
 
+        updateHighlight(STRONG_TAG, STRONG_COLOR_STYLE);
+        updateHighlight(SOFT_TAG, SOFT_COLOR_STYLE);
+
         console.log("Highlighting took " + (performance.now() - startTime) + " milliseconds.");
     }
 }
 
-function removeHighlight(cssClass) {
-  var elements = document.querySelectorAll("." + cssClass);
-  for (var element of elements) {
-    element.classList.remove(cssClass);
-  }
+function removeHighlight(tag) {
+    var elements = document.querySelectorAll(tag);
+    for (var element of elements) {
+        element.style.removeProperty("background-color");
+    }
 }
 
-function addHighlight(cssClass) {
-  var elements;
-  if (cssClass === STRONG_CSS) {
-    elements = document.querySelectorAll(STRONG_TAG);
-  } else {
-    elements = document.querySelectorAll(SOFT_TAG);
-  }
-  for (var element of elements) {
-    element.classList.add(cssClass);
-  }
+function addHighlight(tag, style) {
+    var elements = document.querySelectorAll(tag);
+    for (var element of elements) {
+        element.style.backgroundColor = style;
+    }
+}
+
+function updateHighlight(tag, style) {
+    removeHighlight(tag);
+    addHighlight(tag, style);
 }
 
 function loadToolSettings() {
@@ -127,7 +130,7 @@ function loadToolSettings() {
 }
 
 function scrollToFirstElement() {
-  var element = document.querySelector("." + STRONG_CSS);
+  var element = document.querySelector(STRONG_TAG);
   if (element !== null) {
     element.scrollIntoView();
   }
@@ -165,20 +168,20 @@ chrome.extension.onMessage.addListener(function (message, sender, callback) {
     enableTool = message.value;
     storage.set({'enableTool': enableTool});
     if (enableTool) {
-      addHighlight(STRONG_CSS);
-      addHighlight(SOFT_CSS);
+      addHighlight(STRONG_TAG, STRONG_COLOR_STYLE);
+      addHighlight(SOFT_TAG, SOFT_COLOR_STYLE);
     } else {
-      removeHighlight(STRONG_CSS);
-      removeHighlight(SOFT_CSS);
+      removeHighlight(STRONG_TAG);
+      removeHighlight(SOFT_TAG);
     }
   }
   if (message.actionCall === "enableSoftHighlight") {
     enableSoftHighlight = message.value;
     storage.set({'enableSoftHighlight': enableSoftHighlight});
     if (enableSoftHighlight) {
-      addHighlight(SOFT_CSS);
+      addHighlight(SOFT_TAG, SOFT_COLOR_STYLE);
     } else {
-      removeHighlight(SOFT_CSS);
+      removeHighlight(SOFT_TAG);
     }
   }
   if (message.actionCall === "scrollToFirst") {
