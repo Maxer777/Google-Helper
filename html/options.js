@@ -1,13 +1,17 @@
+var storage = chrome.storage.local;
+
 function save_settings() {
     var strong = document.getElementById('highlight_color').value;
     var soft = document.getElementById('highlight_soft_color').value;
-    chrome.storage.local.set({'strongColor': strong});
-    chrome.storage.local.set({'softColor': soft});
+  storage.set({'strongColor': strong});
+  storage.set({'softColor': soft});
     var status = document.getElementById('status');
     status.textContent = 'Saved';
     setTimeout(function () {
         status.textContent = '';
     }, 1000);
+    console.log(strong);
+    console.log(soft);
 }
 
 function load_settings() {
@@ -20,6 +24,7 @@ function load_settings() {
         document.getElementById('highlight_soft_color').checked = settings.softColor;
       });*/
     storage.get('strongColor', function (result) {
+      console.log(result.strongColor);
         var color = result.strongColor;
         if (color == null) {
             color = '#F4D03F';
@@ -34,6 +39,7 @@ function load_settings() {
         document.getElementById('highlight_soft_color').value = color;
     });
 }
+
 
 document.addEventListener('DOMContentLoaded', load_settings);
 document.getElementById('save_settings').addEventListener('click', save_settings);

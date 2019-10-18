@@ -88,8 +88,8 @@ function highlightKeyWords(keyWords) {
             }
         }
 
-        updateHighlight(STRONG_TAG, STRONG_COLOR_STYLE);
-        updateHighlight(SOFT_TAG, SOFT_COLOR_STYLE);
+        updateHighlight(STRONG_TAG, strong_color);
+        updateHighlight(SOFT_TAG, soft_color);
 
         console.log("Highlighting took " + (performance.now() - startTime) + " milliseconds.");
     }
@@ -117,15 +117,12 @@ function updateHighlight(tag, style) {
 function loadToolSettings() {
     storage.get('enableTool', function (result) {
       enableTool = result.enableTool;
-      chrome.contextMenus.update("enableTool", {type: "checkbox", checked: enableTool});
     });
     storage.get('enableSoftHighlight', function (result) {
       enableSoftHighlight = result.enableSoftHighlight;
-      chrome.contextMenus.update("enableSoftHighlight", {type: "checkbox", checked: enableSoftHighlight});
     });
     storage.get('scrollToFirst', function (result) {
       scrollToFirst = result.scrollToFirst;
-      chrome.contextMenus.update("scrollToFirst", {type: "checkbox", checked: scrollToFirst});
     });
     storage.get('strongColor', function (result) {
         var color = result.strongColor;
@@ -186,8 +183,8 @@ chrome.extension.onMessage.addListener(function (message, sender, callback) {
     enableTool = message.value;
     storage.set({'enableTool': enableTool});
     if (enableTool) {
-      addHighlight(STRONG_TAG, STRONG_COLOR_STYLE);
-      addHighlight(SOFT_TAG, SOFT_COLOR_STYLE);
+      addHighlight(STRONG_TAG, strong_color);
+      addHighlight(SOFT_TAG, soft_color);
     } else {
       removeHighlight(STRONG_TAG);
       removeHighlight(SOFT_TAG);
@@ -197,7 +194,7 @@ chrome.extension.onMessage.addListener(function (message, sender, callback) {
     enableSoftHighlight = message.value;
     storage.set({'enableSoftHighlight': enableSoftHighlight});
     if (enableSoftHighlight) {
-      addHighlight(SOFT_TAG, SOFT_COLOR_STYLE);
+      addHighlight(SOFT_TAG, soft_color);
     } else {
       removeHighlight(SOFT_TAG);
     }
