@@ -2,8 +2,6 @@ console.log("HIGHLIGHER!!!");
 
 const STRONG_TAG = "my_strong";
 const SOFT_TAG = "my_soft";
-const STRONG_COLOR_STYLE = "rgb(244, 208, 63)";
-const SOFT_COLOR_STYLE = "rgb(255, 250, 205)";
 const STRONG_REPLACEMENT = "<"+STRONG_TAG+">\$&</"+STRONG_TAG+">";
 const SOFT_REPLACEMENT = "<"+SOFT_TAG+">\$&</"+SOFT_TAG+">";
 
@@ -221,7 +219,6 @@ highlightByTimer();
 // для теста: and ainol novo 7 elf 2 usb характеристики систем -> https://market.yandex.ru/product--planshet-ainol-novo-7-elf-ii/8334063/spec
 
 // 1. fast switch between search keywords(optional)​
-// 2. highlighting and features customization
 // 3. javascript map size -> https://javascript.info/map-set
 // иконка
 // вынести все настройки в попап
